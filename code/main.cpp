@@ -11,6 +11,7 @@ constexpr long int OUT_RADIX = 27;
 constexpr bool PRINT_DEBUG = true;
 constexpr bool PRINT_NUMS = false;
 constexpr bool PRINT_PROGRESS = true;
+constexpr size_t BUFFER_SIZE = 256;
 
 void make_upper(char *str) {
   for (size_t i{}; str[i]; i++) {
@@ -56,7 +57,7 @@ char *tostr_mpz_b27(const mpz_t &bigint) {
 }
 
 int main() {
-  FILE *input = fopen(R"(..\large_files\pi_dec_1t_01\pi_dec_1MiB.txt)", "rb");
+  FILE *input = fopen(R"(..\large_files\pi_dec_1t_01\pi_dec_1024.txt)", "rb");
   if constexpr (PRINT_DEBUG) printf("File opened.\n");
 
   // Get file size:
@@ -87,7 +88,7 @@ int main() {
 
   // Calculate the number of output digits we can reasonably produce,
   // given the number of input digits we have:
-  size_t num_out_radix_digits = num_in_radix_digits / log10(OUT_RADIX);
+  size_t num_out_radix_digits = num_in_radix_digits / log10(OUT_RADIX) - 1;
   if constexpr (PRINT_DEBUG)
     printf("num_out_radix_digits: %zu\n", num_out_radix_digits);
 
@@ -106,7 +107,9 @@ int main() {
   // Write result to output:
   if constexpr (PRINT_PROGRESS) printf("Writing to output file... ");
   auto out = tostr_mpz_b27(pi);
-  FILE *fout = fopen("out.txt", "w");
+  char filename[BUFFER_SIZE];
+  snprintf(filename, BUFFER_SIZE, "out_%zu.txt", num_out_radix_digits);
+  FILE *fout = fopen(filename, "w");
   fprintf(fout, "%s", out);
   fclose(fout);
   delete[] out;
