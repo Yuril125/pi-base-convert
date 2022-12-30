@@ -3,6 +3,8 @@ pi_dec_1t_01.txt
 
 # Other large files (>100 MB)
 pi_dec_1GiB.txt
+pi_dec_256MiB.txt
+pi_dec_512MiB.txt
 pi_dec_6147661000.txt
 pi_dec_nopoint.txt
 test.txt
