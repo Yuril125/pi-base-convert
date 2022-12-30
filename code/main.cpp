@@ -123,14 +123,16 @@ int main(int argc, char **argv) {
     if constexpr (PRINT_DEBUG) printf("num_out_radix_digits: %zu\n", num_out_radix_digits);
 
     // Do the actual conversion:
-    if constexpr (PRINT_PROGRESS) printf("Converting to base %ld... ", out_radix);
-    for (size_t i{}; i < num_out_radix_digits; i++) {
-        mpz_mul_si(pi, pi, out_radix);
-    }
-    if constexpr (PRINT_PROGRESS) printf("Done.\nDiving by input base %lu... ", IN_RADIX);
-    for (size_t i{}; i < num_in_radix_digits; i++) {
-        mpz_tdiv_q_ui(pi, pi, IN_RADIX);
-    }
+    if constexpr (PRINT_PROGRESS) printf("Calculating base %ld multiplier... ", out_radix);
+    mpz_t temp;
+    mpz_init_set_si(temp, out_radix);
+    mpz_pow_ui(temp, temp, num_out_radix_digits);
+    if constexpr (PRINT_PROGRESS) printf("Done.\nMultiplying by multiplier... ");
+    mpz_mul(pi, pi, temp);
+    if constexpr (PRINT_PROGRESS) printf("Done.\nCalculating base %lu divisor... ", IN_RADIX);
+    mpz_ui_pow_ui(temp, IN_RADIX, num_in_radix_digits);
+    if constexpr (PRINT_PROGRESS) printf("Done.\nDividing by divisor... ");
+    mpz_tdiv_q(pi, pi, temp);
     if constexpr (PRINT_PROGRESS) printf("Done.\n");
 
     // Write result to output:
