@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <stdexcept>
 
 // Change the formula for num_out_radix_digits if IN_RADIX is not 10
@@ -65,6 +66,7 @@ char *get_program_name(char *fullpath) {
 }
 
 int main(int argc, char **argv) {
+    setbuf(stdout, NULL);
     char *input_file_path{};
     long int out_radix = 27;
     int opt;
