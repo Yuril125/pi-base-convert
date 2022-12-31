@@ -66,7 +66,7 @@ char *get_program_name(char *fullpath) {
 }
 
 int main(int argc, char **argv) {
-    setbuf(stdout, NULL);
+    setbuf(stdout, nullptr);  // So messages print without needing newline
     char *input_file_path{};
     long int out_radix = 27;
     int opt;
@@ -135,9 +135,25 @@ int main(int argc, char **argv) {
     if constexpr (PRINT_PROGRESS) printf("Done.\nMultiplying by multiplier... ");
     mpz_mul(pi, pi, temp);
     if constexpr (PRINT_PROGRESS) printf("Done.\nCalculating base %lu divisor... ", IN_RADIX);
-    mpz_ui_pow_ui(temp, IN_RADIX, num_in_radix_digits);
-    if constexpr (PRINT_PROGRESS) printf("Done.\nDividing by divisor... ");
-    mpz_tdiv_q(pi, pi, temp);
+    if (num_in_radix_digits > 0x4000'0000) {
+        if constexpr (PRINT_DEBUG)
+            printf("\nnum_in_radix_digits larger than 2^30. Separating... \n");
+        mpz_ui_pow_ui(temp, IN_RADIX, 0x4000'0000);
+        size_t num_iterations_needed = num_in_radix_digits / 0x4000'0000;
+        unsigned long pow_left = num_in_radix_digits % 0x4000'0000;
+        for (size_t i{1}; i <= num_iterations_needed; i++) {
+            if constexpr (PRINT_DEBUG) printf("Iteration %zu of %zu... ", i, num_iterations_needed);
+            mpz_tdiv_q(pi, pi, temp);
+            if constexpr (PRINT_DEBUG) printf("Done.\n");
+        }
+        if constexpr (PRINT_DEBUG) printf("Dividing by remaining %lu^%zu... ", IN_RADIX, pow_left);
+        mpz_ui_pow_ui(temp, IN_RADIX, pow_left);
+        mpz_tdiv_q(pi, pi, temp);
+    } else {
+        mpz_ui_pow_ui(temp, IN_RADIX, num_in_radix_digits);
+        if constexpr (PRINT_PROGRESS) printf("Done.\nDividing by divisor... ");
+        mpz_tdiv_q(pi, pi, temp);
+    }
     if constexpr (PRINT_PROGRESS) printf("Done.\n");
 
     if constexpr (PRINT_DEBUG) printf("Generating base %ld text representation... ", out_radix);
